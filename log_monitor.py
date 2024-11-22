@@ -80,6 +80,6 @@ def monitor_log(log_file):
     observer.join()
 
 if __name__ == "__main__":
-    LOG_FILE_PATH = '/var/lol/syslog'  # Replace with your actual log file path
+    LOG_FILE_PATH = '/var/log/syslog'  # Replace with your actual log file path
     setup_database()
     monitor_log(LOG_FILE_PATH)
