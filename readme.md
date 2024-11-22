@@ -1,10 +1,3 @@
-To update your repository at `https://github.com/0x3639/go-zenon_speedtest.git` and include instructions on how to run the script as a background service, follow these steps:
-
----
-
-### Updated `README.md`
-
-```markdown
 # Log Monitor with System Resource Tracking
 
 This Python script monitors a log file for specific entries, extracts relevant information (block height, hash, timestamp, number of transactions, and system resource usage), and stores the data in a SQLite database.
