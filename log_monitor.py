@@ -4,6 +4,7 @@ import psutil
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import time
+from datetime import datetime
 
 # Database setup
 DB_NAME = 'log_data.db'
@@ -16,7 +17,9 @@ def setup_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             height INTEGER,
             hash TEXT,
+            block_timestamp INTEGER,
             current_time TEXT,
+            pillar_address TEXT,
             txs INTEGER,
             cpu_usage REAL,
             memory_usage REAL,
@@ -26,16 +29,14 @@ def setup_database():
     conn.commit()
     conn.close()
 
-def insert_into_db(height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage):
-    """
-    Insert a momentum into the database.
-    """
+def insert_into_db(height, hash_value, block_timestamp, current_time, pillar_address, txs, cpu_usage, memory_usage, swap_usage):
+    print(f"Debug - About to insert timestamp: {current_time}")
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO logs (height, hash, current_time, txs, cpu_usage, memory_usage, swap_usage)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage))
+        INSERT INTO logs (height, hash, block_timestamp, current_time, pillar_address, txs, cpu_usage, memory_usage, swap_usage)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (height, hash_value, block_timestamp, current_time, pillar_address, txs, cpu_usage, memory_usage, swap_usage))
     conn.commit()
     conn.close()
     print(f"Inserted: Height={height}, Hash={hash_value}")
@@ -61,14 +62,16 @@ class LogHandler(FileSystemEventHandler):
                     self.process_log_entry(line)
 
     def process_log_entry(self, line):
-        # Regular expression to match the required log entry
-        pattern = r"Height: (\d+), Hash: ([a-f0-9]+), .*?Current time: (.+?), Txs: (\d+)"
+        pattern = r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}).*?Height: (\d+), Hash: ([a-f0-9]+).*?Timestamp: (\d+), Pillar producer address: ([a-z0-9]+), Current time: (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}), Txs: (\d+)"
         match = re.search(pattern, line)
         if match:
-            height = int(match.group(1))
-            hash_value = match.group(2)
-            current_time = match.group(3)
-            txs = int(match.group(4))
+            syslog_time = match.group(1)
+            height = int(match.group(2))
+            hash_value = match.group(3)
+            block_timestamp = int(match.group(4))
+            pillar_address = match.group(5)
+            current_time = match.group(6)
+            txs = int(match.group(7))
 
             # Get system resource usage
             cpu_usage = psutil.cpu_percent(interval=0.1)
@@ -76,7 +79,7 @@ class LogHandler(FileSystemEventHandler):
             swap_usage = psutil.swap_memory().percent
 
             # Insert into the database
-            insert_into_db(height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage)
+            insert_into_db(height, hash_value, block_timestamp, current_time, pillar_address, txs, cpu_usage, memory_usage, swap_usage)
 
 def monitor_log(log_file):
     event_handler = LogHandler(log_file)
