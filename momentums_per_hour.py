@@ -10,11 +10,11 @@ def calculate_momentums_per_hour():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    # Query to fetch timestamps and heights
+    # Query to fetch timestamps and heights using the new timestamp field
     query = """
-        SELECT current_time, height
+        SELECT timestamp, height
         FROM logs
-        ORDER BY current_time ASC
+        ORDER BY timestamp ASC
     """
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -30,9 +30,9 @@ def calculate_momentums_per_hour():
     start_height = rows[0][1]
     total_momentums = 0
 
-    for current_time, height in rows[1:]:
-        current_time_dt = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
-        elapsed_hours = (current_time_dt - start_time).total_seconds() / 3600
+    for current_time_str, height in rows[1:]:
+        current_time = datetime.strptime(current_time_str, "%Y-%m-%d %H:%M:%S")
+        elapsed_hours = (current_time - start_time).total_seconds() / 3600
 
         if elapsed_hours >= 1:
             # Calculate momentums per hour
@@ -40,7 +40,7 @@ def calculate_momentums_per_hour():
             hourly_data.append((start_time.strftime("%Y-%m-%d %H:%M:%S"), momentums_per_hour))
             
             # Reset start time and momentums
-            start_time = current_time_dt
+            start_time = current_time
             total_momentums = 0
 
         total_momentums += height - start_height
