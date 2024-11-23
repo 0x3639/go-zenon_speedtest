@@ -11,7 +11,7 @@ def fetch_last_25_records():
     
     # Query to fetch the last 25 records
     query = """
-        SELECT id, height, hash, block_timestamp, current_time, pillar_address,
+        SELECT id, height, hash, current_time,
                txs, cpu_usage, memory_usage, swap_usage
         FROM logs
         ORDER BY id DESC
@@ -24,7 +24,7 @@ def fetch_last_25_records():
 
 def display_table(records):
     # Define table headers
-    headers = ["ID", "Height", "Hash", "Block Timestamp", "Current Time", "Pillar Address",
+    headers = ["ID", "Height", "Hash", "Current Time",
               "Txs", "CPU Usage (%)", "Memory Usage (%)", "Swap Usage (%)"]
     
     # Display the records in a table format

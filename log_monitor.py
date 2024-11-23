@@ -62,21 +62,23 @@ class LogHandler(FileSystemEventHandler):
                     self.process_log_entry(line)
 
     def process_log_entry(self, line):
-        pattern = r"(\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}).*?Height: (\d+), Hash: ([a-f0-9]+).*?Timestamp: (\d+), Pillar producer address: ([a-z0-9]+), Current time: (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}), Txs: (\d+)"
+        pattern = r"Height: (\d+), Hash: ([a-f0-9]+).*?Timestamp: (\d+), Pillar producer address: ([a-z0-9]+), Current time: (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}), Txs: (\d+)"
         match = re.search(pattern, line)
         if match:
-            syslog_time = match.group(1)
-            height = int(match.group(2))
-            hash_value = match.group(3)
-            block_timestamp = int(match.group(4))
-            pillar_address = match.group(5)
-            current_time = match.group(6)
-            txs = int(match.group(7))
+            height = int(match.group(1))
+            hash_value = match.group(2)
+            block_timestamp = int(match.group(3))
+            pillar_address = match.group(4)
+            current_time = match.group(5)
+            txs = int(match.group(6))
 
             # Get system resource usage
             cpu_usage = psutil.cpu_percent(interval=0.1)
             memory_usage = psutil.virtual_memory().percent
             swap_usage = psutil.swap_memory().percent
+
+            # Debug print to verify what we're capturing
+            print(f"Debug - Captured current_time from log: {current_time}")
 
             # Insert into the database
             insert_into_db(height, hash_value, block_timestamp, current_time, pillar_address, txs, cpu_usage, memory_usage, swap_usage)
