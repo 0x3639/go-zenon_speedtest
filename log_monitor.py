@@ -27,6 +27,9 @@ def setup_database():
     conn.close()
 
 def insert_into_db(height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage):
+    """
+    Insert a momentum into the database.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("""
@@ -35,17 +38,26 @@ def insert_into_db(height, hash_value, current_time, txs, cpu_usage, memory_usag
     """, (height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage))
     conn.commit()
     conn.close()
+    print(f"Inserted: Height={height}, Hash={hash_value}")
 
 # Log monitoring
 class LogHandler(FileSystemEventHandler):
     def __init__(self, log_file):
         self.log_file = log_file
+        self.last_position = 0  # Track the last read position in the log file
 
     def on_modified(self, event):
         if event.src_path == self.log_file:
             with open(self.log_file, 'r') as file:
-                lines = file.readlines()
-                for line in lines:
+                # Move to the last read position
+                file.seek(self.last_position)
+
+                # Read new lines
+                new_lines = file.readlines()
+                self.last_position = file.tell()  # Update position for next read
+
+                # Process each new line
+                for line in new_lines:
                     self.process_log_entry(line)
 
     def process_log_entry(self, line):
@@ -63,7 +75,7 @@ class LogHandler(FileSystemEventHandler):
             memory_usage = psutil.virtual_memory().percent
             swap_usage = psutil.swap_memory().percent
 
-            print(f"Found entry - Height: {height}, Hash: {hash_value}, Current Time: {current_time}, Txs: {txs}, CPU: {cpu_usage}%, Memory: {memory_usage}%, Swap: {swap_usage}%")
+            # Insert into the database
             insert_into_db(height, hash_value, current_time, txs, cpu_usage, memory_usage, swap_usage)
 
 def monitor_log(log_file):
