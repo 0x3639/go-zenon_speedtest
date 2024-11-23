@@ -14,7 +14,7 @@ def fetch_last_25_records():
         SELECT id, height, hash, timestamp,
                txs, cpu_usage, memory_usage, swap_usage
         FROM logs
-        ORDER BY timestamp DESC
+        ORDER BY id DESC
         LIMIT 25;
     """
     cursor.execute(query)
