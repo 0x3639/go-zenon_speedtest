@@ -9,12 +9,12 @@ def fetch_last_25_records():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Query to fetch the last 25 records
+    # Query to fetch the last 25 records using the timestamp field
     query = """
-        SELECT id, height, hash, current_time,
+        SELECT id, height, hash, timestamp,
                txs, cpu_usage, memory_usage, swap_usage
         FROM logs
-        ORDER BY id DESC
+        ORDER BY timestamp DESC
         LIMIT 25;
     """
     cursor.execute(query)
@@ -24,7 +24,7 @@ def fetch_last_25_records():
 
 def display_table(records):
     # Define table headers
-    headers = ["ID", "Height", "Hash", "Current Time",
+    headers = ["ID", "Height", "Hash", "Timestamp",
               "Txs", "CPU Usage (%)", "Memory Usage (%)", "Swap Usage (%)"]
     
     # Display the records in a table format
